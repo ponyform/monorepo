@@ -1,0 +1,18 @@
+{
+    "name": "ponyform/text-question-plugin",
+    "description": "Official PonyForm Plugin for plain text questions",
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Andreas Mischke",
+            "email": "andreas@mischke.me"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "PonyForm\\TextQuestionPlugin\\": ""
+        }
+    }
+}

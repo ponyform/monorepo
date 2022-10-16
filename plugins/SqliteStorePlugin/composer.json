@@ -1,0 +1,20 @@
+{
+    "name": "ponyform/sqlite-store-plugin",
+    "description": "Official PonyForm Plugin to use SQLite as data store",
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Andreas Mischke",
+            "email": "andreas@mischke.me"
+        }
+    ],
+    "require": {
+        "respect/validation": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "PonyForm\\SqliteStorePlugin\\": ""
+        }
+    }
+}

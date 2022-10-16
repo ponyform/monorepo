@@ -1,0 +1,20 @@
+{
+    "name": "ponyform/slim-http-adapter",
+    "description": "PonyForm HTTP adapter to integrate with slim applications",
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Andreas Mischke",
+            "email": "andreas@mischke.me"
+        }
+    ],
+    "require": {
+        "slim/slim": "^4.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "PonyForm\\SlimHttpAdapter\\": ""
+        }
+    }
+}
