@@ -9,10 +9,16 @@
             "email": "andreas@mischke.me"
         }
     ],
-    "require": {},
     "autoload": {
         "psr-4": {
             "PonyForm\\SelectionQuestionPlugin\\": ""
         }
+    },
+    "conflict": {
+        "ponyform/core": "<0.1.0",
+        "ponyform/plugin-contract": "<0.1.0",
+        "ponyform/slim-http-adapter": "<0.1.0",
+        "ponyform/text-question-plugin": "<0.1.0",
+        "ponyform/sqlite-store-plugin": "<0.1.0"
     }
 }

@@ -29,12 +29,11 @@
         }
     },
     "replace": {
-        "ponyform/core": "self.version",
-        "ponyform/monorepo": "self.version",
-        "ponyform/plugin-contract": "self.version",
-        "ponyform/selection-question-plugin": "self.version",
-        "ponyform/slim-http-adapter": "self.version",
-        "ponyform/sqlite-store-plugin": "self.version",
-        "ponyform/text-question-plugin": "self.version"
+        "ponyform/core": "0.1.0",
+        "ponyform/plugin-contract": "0.1.0",
+        "ponyform/selection-question-plugin": "0.1.0",
+        "ponyform/slim-http-adapter": "0.1.0",
+        "ponyform/sqlite-store-plugin": "0.1.0",
+        "ponyform/text-question-plugin": "0.1.0"
     }
 }

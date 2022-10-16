@@ -16,5 +16,12 @@
         "psr-4": {
             "PonyForm\\SqliteStorePlugin\\": ""
         }
+    },
+    "conflict": {
+        "ponyform/core": "<0.1.0",
+        "ponyform/plugin-contract": "<0.1.0",
+        "ponyform/slim-http-adapter": "<0.1.0",
+        "ponyform/text-question-plugin": "<0.1.0",
+        "ponyform/selection-question-plugin": "<0.1.0"
     }
 }
