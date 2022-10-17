@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+if [[ -z "$1" ]]; then
+    echo "Usage: bin/list-packages [options] <folder>";
+    echo "";
+    echo "Options:";
+    echo "  --json  output list in JSON format";
+    exit 1;
+fi
+
+if [[ "$1" == "--json" ]]; then
+    json_format="1";
+    shift;
+fi
+
+folder="${1%/}";
+
+packages=`ls -1 $folder`;
+
+if [[ -n "$json_format" ]]; then
+    echo -n "[";
+fi
+
+for package in $packages; do
+    if [[ -n "${package%%*( )}" ]] && [[ -d "$folder/$package" ]] && [[ -f "$folder/$package/composer.json" ]]; then
+        if [[ -n "$json_format" ]]; then
+            if [[ -n "$print_comma" ]]; then
+                echo -n ",";
+            fi
+            print_comma="1";
+            echo -n "\"";
+        fi
+
+        echo -n "$folder/$package";
+
+        if [[ -n "$json_format" ]]; then
+            echo -n "\"";
+        else
+            echo;
+        fi
+    fi;
+done;
+
+if [[ -n "$json_format" ]]; then
+    echo "]";
+fi

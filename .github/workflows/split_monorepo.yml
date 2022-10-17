@@ -1,0 +1,43 @@
+name: Split Monorepo
+
+on:
+    push:
+        branches:
+            - main
+        tags:
+            - "*"
+
+jobs:
+    list_packages:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            # get package json list
+            - id: output_data
+              run: echo "::set-output name=matrix::$(bin/list-packages --json ./packages/)"
+
+        # this step is needed, so the output gets to the next defined job
+        outputs:
+            matrix: ${{ steps.output_data.outputs.matrix }}
+
+    split_monorepo:
+        needs: list_packages
+
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                package: ${{fromJson(needs.list_packages.outputs.matrix)}}
+
+        steps:
+            - uses: actions/checkout@v3
+
+            # no tag
+            - if: "!startsWith(github.ref, 'refs/tags/')"
+              name: Monorepo Split of ${{ matrix.package }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+                  DEBUG: true
+              run: bin/split-repo "${{ matrix.package }}"

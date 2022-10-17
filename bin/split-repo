@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+if [[ -z "$1" ]]; then
+    echo "Usage: bin/split-repo <package-folder>";
+    exit 1;
+fi
+
+folder="${1%/}";
+
+if [[ -n "$DEBUG" ]]; then
+    set -x
+fi
+
+# Get Repository name from composer.json name field
+composer_json="$folder/composer.json";
+composer_name=`php -r "echo json_decode(file_get_contents('$composer_json'))->name;"`
+
+# Get current commit hash for commit message
+source_commit=`git rev-parse HEAD`;
+
+# Create temporary directory to clone sub repo and delete trailing slash
+tmpdir="./tmp-subrepo-$RANDOM"
+mkdir $tmpdir
+
+# Clone sub repo
+repoUrl="https://$GITHUB_TOKEN@github.com/$composer_name.git"
+git clone --depth 1 $repoUrl $tmpdir
+
+# Delete everything from cloned repo besides .git and other dot-folders
+rm -r $tmpdir/*
+
+# Copy package to cloned sub repo
+cp -r $folder/* $tmpdir/
+
+# Go to cloned sub repo
+cd $tmpdir
+
+# Add everything, commit and push
+git config user.email "monorepo-splitter@ponyform.de"
+git config user.name "PonyForm Monorepo Splitter"
+git add .
+git commit -m "Split $composer_name from ponyform/monorepo commit $source_commit"
+git push
+
+# Remove temporary directory
+cd ..
+rm -rf $tmpdir
