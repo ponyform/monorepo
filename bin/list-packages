@@ -1,6 +1,25 @@
 #!/usr/bin/env bash
 
-if [[ -z "$1" ]]; then
+folders=()
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --json)
+            json_format="1"
+            shift
+        ;;
+        -*|--*)
+            echo "Unknown option $1"
+            exit 1
+        ;;
+        *)
+            folders+=("$1")
+            shift
+        ;;
+    esac
+done
+
+if [[ "${#folders[@]}" -lt "1" ]]; then
     echo "Usage: bin/list-packages [options] <folder>";
     echo "";
     echo "Options:";
@@ -8,39 +27,35 @@ if [[ -z "$1" ]]; then
     exit 1;
 fi
 
-if [[ "$1" == "--json" ]]; then
-    json_format="1";
-    shift;
-fi
-
-folder="${1%/}";
-
-packages=`ls -1 $folder`;
+list_prefix=""
+item_prefix=""
+item_suffix=$'\n'
+list_suffix=""
 
 if [[ -n "$json_format" ]]; then
-    echo -n "[";
+    list_prefix="["
+    item_prefix='"'
+    item_suffix='"'
+    list_suffix="]"
 fi
 
-for package in $packages; do
-    if [[ -n "${package%%*( )}" ]] && [[ -d "$folder/$package" ]] && [[ -f "$folder/$package/composer.json" ]]; then
-        if [[ -n "$json_format" ]]; then
-            if [[ -n "$print_comma" ]]; then
-                echo -n ",";
-            fi
-            print_comma="1";
-            echo -n "\"";
+echo -n $list_prefix
+for folder in ${folders[@]}; do
+    folder="${folder%/}";
+
+    packages=($(ls -1 $folder));
+
+    for package in ${packages[@]}; do
+        if [[ ! -d "$folder/$package" ]] || [[ ! -f "$folder/$package/composer.json" ]]; then
+            continue
         fi
 
-        echo -n "$folder/$package";
+        echo -n "$item_prefix$folder/$package$item_suffix";
 
         if [[ -n "$json_format" ]]; then
-            echo -n "\"";
-        else
-            echo;
-        fi
-    fi;
-done;
+            item_prefix=',"'
+        fi;
+    done;
 
-if [[ -n "$json_format" ]]; then
-    echo "]";
-fi
+done
+echo -n $list_suffix

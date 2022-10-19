@@ -16,7 +16,7 @@ jobs:
 
             # get package json list
             - id: output_data
-              run: echo "::set-output name=matrix::$(bin/list-packages --json ./packages/)"
+              run: echo "::set-output name=matrix::$(bin/list-packages --json ./packages/ ./plugins/)"
 
         # this step is needed, so the output gets to the next defined job
         outputs:
