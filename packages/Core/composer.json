@@ -1,6 +1,7 @@
 {
     "name": "ponyform/core",
     "description": "PonyForm Core",
+    "version": "v0.0.0",
     "type": "library",
     "license": "proprietary",
     "authors": [

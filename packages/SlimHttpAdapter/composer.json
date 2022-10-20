@@ -1,6 +1,7 @@
 {
     "name": "ponyform/slim-http-adapter",
     "description": "PonyForm HTTP adapter to integrate with slim applications",
+    "version": "v0.0.0",
     "type": "library",
     "license": "proprietary",
     "authors": [

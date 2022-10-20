@@ -1,6 +1,7 @@
 {
     "name": "ponyform/sqlite-store-plugin",
     "description": "Official PonyForm Plugin to use SQLite as data store",
+    "version": "v0.0.0",
     "type": "library",
     "license": "proprietary",
     "authors": [

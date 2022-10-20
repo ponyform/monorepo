@@ -1,6 +1,7 @@
 {
     "name": "ponyform/text-question-plugin",
     "description": "Official PonyForm Plugin for plain text questions",
+    "version": "v0.0.0",
     "type": "library",
     "license": "proprietary",
     "authors": [

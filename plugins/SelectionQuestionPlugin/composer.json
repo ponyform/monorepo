@@ -1,6 +1,7 @@
 {
     "name": "ponyform/selection-question-plugin",
     "description": "Official PonyForm Plugin for single/multiple choice questions",
+    "version": "v0.0.0",
     "type": "library",
     "license": "proprietary",
     "authors": [
