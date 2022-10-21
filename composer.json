@@ -8,6 +8,7 @@
     ],
     "require": {
         "hidehalo/nanoid-php": "^1.1",
+        "ponyform/plugin-contract": "^0.0",
         "psr/http-message": "^1.0",
         "psr/http-server-handler": "^1.0",
         "respect/validation": "^2.2",
@@ -29,11 +30,11 @@
         }
     },
     "replace": {
-        "ponyform/core": "0.1.0",
-        "ponyform/plugin-contract": "0.1.0",
-        "ponyform/selection-question-plugin": "0.1.0",
-        "ponyform/slim-http-adapter": "0.1.0",
-        "ponyform/sqlite-store-plugin": "0.1.0",
-        "ponyform/text-question-plugin": "0.1.0"
+        "ponyform/core": "0.0.0",
+        "ponyform/plugin-contract": "0.0.0",
+        "ponyform/selection-question-plugin": "0.0.0",
+        "ponyform/slim-http-adapter": "0.0.0",
+        "ponyform/sqlite-store-plugin": "0.0.0",
+        "ponyform/text-question-plugin": "0.0.0"
     }
 }
