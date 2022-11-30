@@ -1,0 +1,227 @@
+#!/usr/bin/env php
+<?php
+
+define('NO_NEWLINE', 1);
+define('MAJOR', 3);
+define('MINOR', 2);
+define('PATCH', 1);
+
+$args = parseArguments($argv);
+
+define('DEBUG', $args->debug);
+define('DRY_RUN', $args->dryRun);
+
+if (DRY_RUN) {
+    trace(colored('purple', "Running in dry-run mode. No files we be changed"));
+}
+
+if (count($args->folders) === 0) {
+    printHelpAndExit($argv);
+}
+
+$stat = new \stdClass();
+$stat->success = 0;
+$stat->skipped = 0;
+
+foreach ($args->folders as $folder) {
+    trace("Preparing release for folder", colored('cyan', $folder));
+
+    $meta = getComposerJson($folder);
+    if ($meta === null) {
+        $stat->skipped++;
+        println(colored('red', "No composer.json found in \"$folder\", skipping that folder."));
+        trace();
+    }
+
+    $commitMessages = getRelevantCommitMessages($folder, $meta->version);
+
+    if (count($commitMessages) === 0) {
+        $stat->skipped++;
+        println(colored('green', "No changes since last version, no release necessary."));
+        trace();
+    }
+
+    $increment = calculateIncrementFromGitHistory($commitMessages);
+    $meta->version = calculateNewVersion($meta->version, $increment);
+
+    writeComposerJson($folder, $meta);
+
+    $stat->success++;
+    trace();
+}
+
+println("{$stat->success} packages released, {$stat->skipped} folders skipped.");
+
+function trace(...$values)
+{
+    if (DEBUG) {
+        println(...$values);
+    }
+}
+
+function println(...$values)
+{
+    $newline = PHP_EOL;
+    if (count($values) > 1 && is_int($values[0])) {
+        $flags = array_shift($values);
+        if ($flags & NO_NEWLINE == NO_NEWLINE) {
+            $newline = "";
+        }
+    }
+    echo join(' ', $values) . $newline;
+}
+
+function colored($color, ...$values)
+{
+    static $colors = [
+        'black' => "\033[0;30m",
+        'red' => "\033[0;31m",
+        'green' => "\033[0;32m",
+        'brown' => "\033[0;33m",
+        'blue' => "\033[0;34m",
+        'purple' => "\033[0;35m",
+        'cyan' => "\033[0;36m",
+        'white' => "\033[0;37m",
+        'lightGray' => "\033[0;38m",
+        'bg_black' => "\033[0;40m",
+        'bg_red' => "\033[0;41m",
+        'bg_green' => "\033[0;42m",
+        'bg_brown' => "\033[0;43m",
+        'bg_blue' => "\033[0;44m",
+        'bg_purple' => "\033[0;45m",
+        'bg_cyan' => "\033[0;46m",
+        'bg_white' => "\033[0;47m",
+    ];
+
+    $concatenatedString = join(' ', $values);
+
+    if (!array_key_exists($color, $colors)) {
+        return $concatenatedString;
+    }
+
+    return $colors[$color] . $concatenatedString . "\033[0m";
+}
+
+function printHelpAndExit($argv)
+{
+    println("Usage: {$argv[0]} <package-folder> [...<package-folders>]");
+    exit(1);
+}
+
+function parseArguments($argv)
+{
+    $argv = array_slice($argv, 1);
+    $args = new \stdClass();
+    $args->folders = [];
+    $args->debug = false;
+    $args->dryRun = false;
+
+    while (count($argv) > 0) {
+        switch ($argv[0]) {
+            case '--debug':
+                $args->debug = true;
+                array_shift($argv);
+                break;
+            case '--dry-run':
+                $args->dryRun = true;
+                array_shift($argv);
+                break;
+            default:
+                if (str_starts_with($argv[0], '-')) {
+                    println("Unknown option {$argv[0]}");
+                    exit(1);
+                }
+                $args->folders[] = preg_replace('@/$@', '', $argv[0]);
+                array_shift($argv);
+        }
+    }
+
+    return $args;
+}
+
+function getComposerJson($folder)
+{
+    if (!is_dir($folder) || !is_file("$folder/composer.json")) {
+        return null;
+    }
+
+    $meta = json_decode(file_get_contents("$folder/composer.json"));
+
+    trace("Found package", colored('cyan', $meta->name), "at version", colored('cyan', $meta->version));
+
+    return $meta;
+}
+
+function getRelevantCommitMessages($folder, $currentVersion)
+{
+    $gitLog = shell_exec("git log $currentVersion..HEAD --pretty=format:%s -- $folder");
+    $commitMessages = array_map(fn ($x) => trim($x), explode(PHP_EOL, $gitLog ?? ''));
+
+    if (count($commitMessages) > 0) {
+        trace("Commits:");
+        array_map(fn ($x) => trace("  - $x"), $commitMessages);
+    }
+
+    return $commitMessages;
+}
+
+function calculateIncrementFromGitHistory($commitMessages)
+{
+    $highestIncrement = -1;
+    foreach ($commitMessages as $message) {
+        preg_match("/^([^(:!]+)(\([^)]+\))?(!)?:/", $message, $matches);
+        $type = $matches[1] ?? null;
+        $breaking = !empty($matches[3]);
+        if ($breaking) {
+            $increment = MAJOR;
+        } elseif ($type === "feat") {
+            $increment = MINOR;
+        } else {
+            $increment = PATCH;
+        }
+        $highestIncrement = max($highestIncrement, $increment);
+    }
+
+    return $highestIncrement;
+}
+
+function calculateNewVersion($version, $increment)
+{
+    preg_match('/^(v?)(\d+)\.(\d+)\.(\d+)/', $version, $parts);
+    list(, $v, $major, $minor, $patch) = $parts;
+
+    switch ($increment) {
+        case MAJOR:
+            $newMajor = 1 + (int) $major;
+            $newVersion = "$v$newMajor.0.0";
+            break;
+        case MINOR:
+            $newMinor = 1 + (int) $minor;
+            $newVersion = "$v$major.$newMinor.0";
+            break;
+        case PATCH:
+            $newPatch = 1 + (int) $patch;
+            $newVersion = "$v$major.$minor.$newPatch";
+            break;
+        default:
+            println("Invalid increment \"$increment\"");
+            exit(2);
+    }
+
+    trace("New version:", colored('cyan', $newVersion));
+
+    return $newVersion;
+}
+
+function writeComposerJson($folder, $meta)
+{
+    if (DRY_RUN) {
+        trace(colored('purple', "[DRY RUN]"), "Updating composer.json...");
+        return;
+    }
+    trace(NO_NEWLINE, "Updating composer.json...");
+    $composerJson = "$folder/composer.json";
+    $json = json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    file_put_contents($composerJson, $json . PHP_EOL);
+    trace(" ✓");
+}
